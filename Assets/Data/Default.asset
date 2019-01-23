@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a6be9b004b90d24fb725acb949361b2, type: 3}
+  m_Name: Default
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 11400000, guid: cd83b8a31202bce44ae0b2f61eed690b, type: 2}
+    - {fileID: 11400000, guid: 1e720fdbd3cfa6342b3f9a5c2d7fd5f8, type: 2}
+    - {fileID: 11400000, guid: 2b47c2c553011db41a7d0e774bcbd075, type: 2}
+    - {fileID: 11400000, guid: 009eef0ac5da2454189c14b4efa1c018, type: 2}
+    - {fileID: 11400000, guid: e7f473fc4f87bcd4f835c3b3a7772b37, type: 2}
+    - {fileID: 11400000, guid: bde58731cdbc5684dbce922a9f697781, type: 2}
+    - {fileID: 11400000, guid: 0001933deca498f4d8ff8db4146ab2b0, type: 2}
+    - {fileID: 11400000, guid: d2af167b401cdf74fbb504a4f4e5a6d8, type: 2}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: climateTable
+      Entry: 7
+      Data: 0|WorldGen.Climate[,], Assembly-CSharp
+    - Name: 
+      Entry: 12
+      Data: 15
+    - Name: ranks
+      Entry: 1
+      Data: 3|5
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 10
+      Data: 0
+    - Name: 
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 10
+      Data: 2
+    - Name: 
+      Entry: 10
+      Data: 2
+    - Name: 
+      Entry: 10
+      Data: 3
+    - Name: 
+      Entry: 10
+      Data: 3
+    - Name: 
+      Entry: 10
+      Data: 4
+    - Name: 
+      Entry: 10
+      Data: 5
+    - Name: 
+      Entry: 10
+      Data: 6
+    - Name: 
+      Entry: 10
+      Data: 6
+    - Name: 
+      Entry: 10
+      Data: 7
+    - Name: 
+      Entry: 10
+      Data: 7
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  worldSize: 129
+  heightParameters:
+    octaves: 4
+    persistance: 0.35
+    lacunarity: 3.75
+    scale: 70
+  falloffA: 2
+  falloffB: 6
+  falloffMultiplier: 0.7
+  windSlopeRatio: 0.8
+  windDirRatio: 0.02
+  windDir: {x: 1, y: -0}
+  tempA: 1
+  tempB: 0.7
+  tempHeightRatio: 0.517
+  windRainRatio: 30
+  seaLevel: 0.35
+  mountainLevel: 0.7
+  seaClimate: {fileID: 11400000, guid: 272deeb33df77ea43ad9e81d115afdc9, type: 2}
+  mountainClimate: {fileID: 11400000, guid: 2748a0b215dda754dbf09d86804eba31, type: 2}

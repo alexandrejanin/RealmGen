@@ -175,6 +175,7 @@
             Gets the prefab modification type of a given property, if any.
             </summary>
             <param name="property">The property to check.</param>
+            <param name="forceAutoRegister"></param>
             <returns>
             The prefab modification type of the property if it has one, otherwise null.
             </returns>
@@ -475,7 +476,7 @@
             <summary>
             Initializes a new instance of the <see cref="T:Sirenix.OdinInspector.Editor.GetterSetter`2"/> class.
             </summary>
-            <param name="fieldInfo">The field member to represent.</param>
+            <param name="memberInfo">The field member to represent.</param>
             <param name="isReadOnly">if set to <c>true</c> [is readonly].</param>
         </member>
         <member name="M:Sirenix.OdinInspector.Editor.GetterSetter`2.#ctor(Sirenix.Utilities.ValueGetter{`0,`1},Sirenix.Utilities.ValueSetter{`0,`1})">
@@ -2740,26 +2741,6 @@
             Populates the generic menu for the property.
             </summary>
         </member>
-        <member name="T:Sirenix.OdinInspector.Editor.Drawers.SyncListDrawer`2">
-            <summary>
-            SyncList property drawer.
-            </summary>
-        </member>
-        <member name="M:Sirenix.OdinInspector.Editor.Drawers.SyncListDrawer`2.DrawPropertyLayout(UnityEngine.GUIContent)">
-            <summary>
-            Draws the property.
-            </summary>
-        </member>
-        <member name="T:Sirenix.OdinInspector.Editor.Drawers.SyncVarAttributeDrawer">
-            <summary>
-            SyncVar attribute drawer.
-            </summary>
-        </member>
-        <member name="M:Sirenix.OdinInspector.Editor.Drawers.SyncVarAttributeDrawer.DrawPropertyLayout(UnityEngine.GUIContent)">
-            <summary>
-            Draws the property.
-            </summary>
-        </member>
         <member name="T:Sirenix.OdinInspector.Editor.Drawers.TypeDrawer`1">
             <summary>
             Type property drawer
@@ -3012,7 +2993,7 @@
             Draws the property.
             </summary>
         </member>
-        <member name="T:Sirenix.OdinInspector.Editor.Drawers.RequiredAttributeDrawer">
+        <member name="T:Sirenix.OdinInspector.Editor.Drawers.RequiredAttributeDrawer`1">
             <summary>
             Draws properties marked with <see cref="T:Sirenix.OdinInspector.RequiredAttribute"/>.
             </summary>
@@ -3020,7 +3001,7 @@
             <seealso cref="T:Sirenix.OdinInspector.InfoBoxAttribute"/>
             <seealso cref="T:Sirenix.OdinInspector.ValidateInputAttribute"/>
         </member>
-        <member name="M:Sirenix.OdinInspector.Editor.Drawers.RequiredAttributeDrawer.DrawPropertyLayout(UnityEngine.GUIContent)">
+        <member name="M:Sirenix.OdinInspector.Editor.Drawers.RequiredAttributeDrawer`1.DrawPropertyLayout(UnityEngine.GUIContent)">
             <summary>
             Draws the property.
             </summary>
@@ -5338,6 +5319,33 @@
                      selector.SelectionConfirmed += selection =&gt; this.selectedTypes = selection.ToArray();
                      selector.ShowInPopup(); // Returns the Odin Editor Window instance, in case you want to mess around with that as well.
                  }
+             }
+             </code>
+             </example>
+             <example>
+             <code>
+             private static Type currentSelectedType;
+             private static IEnumerable&lt;Type&gt; currentSource;
+             private static Func&lt;Rect, OdinSelector&lt;Type&gt;&gt; createTypeSelector = (rect) =>
+             {
+                 TypeSelector selector = new TypeSelector(currentSource, false);
+                 selector.SetSelection(currentSelectedType);
+                 selector.ShowInPopup(rect);
+                 return selector;
+             };
+             
+             public static Type DrawTypeSelectorDropdown(GUIContent label, Type selectedType, IEnumerable&lt;Type&gt; source)
+             {
+                 currentSource = source;
+                 currentSelectedType = selectedType;
+             
+                 var dropdownText = selectedType == null ? "None" : selectedType.GetNiceName();
+                 var selected = TypeSelector.DrawSelectorDropdown(label, dropdownText, createTypeSelector);
+                 if (selected != null &amp;&amp; selected.Any())
+                 {
+                     selectedType = selected.FirstOrDefault();
+                 }
+                 return selectedType;
              }
              </code>
              </example>
@@ -9796,11 +9804,25 @@
             </summary>
             <param name="path">The path of the property to get.</param>
         </member>
+        <member name="M:Sirenix.OdinInspector.Editor.PropertyTree.GetPropertyAtPath(System.String,Sirenix.OdinInspector.Editor.InspectorProperty@)">
+            <summary>
+            Gets the property at the given path. Note that this is the path found in <see cref="P:Sirenix.OdinInspector.Editor.InspectorProperty.Path" />, not the Unity path.
+            </summary>
+            <param name="path">The path of the property to get.</param>
+            <param name="closestProperty"></param>
+        </member>
         <member name="M:Sirenix.OdinInspector.Editor.PropertyTree.GetPropertyAtUnityPath(System.String)">
             <summary>
             Gets the property at the given Unity path.
             </summary>
             <param name="path">The Unity path of the property to get.</param>
+        </member>
+        <member name="M:Sirenix.OdinInspector.Editor.PropertyTree.GetPropertyAtUnityPath(System.String,Sirenix.OdinInspector.Editor.InspectorProperty@)">
+            <summary>
+            Gets the property at the given Unity path.
+            </summary>
+            <param name="path">The Unity path of the property to get.</param>
+            <param name="closestProperty"></param>
         </member>
         <member name="M:Sirenix.OdinInspector.Editor.PropertyTree.GetPropertyAtDeepReflectionPath(System.String)">
             <summary>
@@ -9813,6 +9835,13 @@
             Gets the property at the given Odin prefab modification path.
             </summary>
             <param name="path">The prefab modification path of the property to get.</param>
+        </member>
+        <member name="M:Sirenix.OdinInspector.Editor.PropertyTree.GetPropertyAtPrefabModificationPath(System.String,Sirenix.OdinInspector.Editor.InspectorProperty@)">
+            <summary>
+            Gets the property at the given Odin prefab modification path.
+            </summary>
+            <param name="path">The prefab modification path of the property to get.</param>
+            <param name="closestProperty"></param>
         </member>
         <member name="M:Sirenix.OdinInspector.Editor.PropertyTree.Draw(System.Boolean)">
             <summary>
@@ -10055,6 +10084,13 @@
             </summary>
             <param name="path">The path of the property to get.</param>
         </member>
+        <member name="M:Sirenix.OdinInspector.Editor.PropertyTree`1.GetPropertyAtPath(System.String,Sirenix.OdinInspector.Editor.InspectorProperty@)">
+            <summary>
+            Gets the property at the given path. Note that this is the path found in <see cref="P:Sirenix.OdinInspector.Editor.InspectorProperty.Path" />, not the Unity path.
+            </summary>
+            <param name="path">The path of the property to get.</param>
+            <param name="closestProperty"></param>
+        </member>
         <member name="M:Sirenix.OdinInspector.Editor.PropertyTree`1.GetPropertyAtUnityPath(System.String)">
             <summary>
             Finds the property at the specified unity path.
@@ -10062,11 +10098,27 @@
             <param name="path">The unity path for the property.</param>
             <returns>The property found at the path.</returns>
         </member>
+        <member name="M:Sirenix.OdinInspector.Editor.PropertyTree`1.GetPropertyAtUnityPath(System.String,Sirenix.OdinInspector.Editor.InspectorProperty@)">
+            <summary>
+            Finds the property at the specified unity path.
+            </summary>
+            <param name="path">The unity path for the property.</param>
+            <param name="closestProperty"></param>
+            <returns>The property found at the path.</returns>
+        </member>
         <member name="M:Sirenix.OdinInspector.Editor.PropertyTree`1.GetPropertyAtPrefabModificationPath(System.String)">
             <summary>
             Finds the property at the specified modification path.
             </summary>
             <param name="path">The prefab modification path for the property.</param>
+            <returns>The property found at the path.</returns>
+        </member>
+        <member name="M:Sirenix.OdinInspector.Editor.PropertyTree`1.GetPropertyAtPrefabModificationPath(System.String,Sirenix.OdinInspector.Editor.InspectorProperty@)">
+            <summary>
+            Finds the property at the specified modification path.
+            </summary>
+            <param name="path">The prefab modification path for the property.</param>
+            <param name="closestProperty"></param>
             <returns>The property found at the path.</returns>
         </member>
         <member name="M:Sirenix.OdinInspector.Editor.PropertyTree`1.GetUnityPropertyForPath(System.String,System.Reflection.FieldInfo@)">
@@ -11546,6 +11598,11 @@
         <member name="M:Sirenix.OdinInspector.Editor.StaticInspectorWindow.DrawEditor(System.Int32)">
             <summary>
             Draws the editor for the this.CurrentDrawingTargets[index].
+            </summary>
+        </member>
+        <member name="T:Sirenix.OdinInspector.Internal.UnityNetworkingUtility">
+            <summary>
+            Contains references to UnityEngine.Networking types. These types have been removed in Unity 2019+, and thus may be null.
             </summary>
         </member>
         <member name="T:Sirenix.Utilities.Editor.SerializationDebuggerWindow">

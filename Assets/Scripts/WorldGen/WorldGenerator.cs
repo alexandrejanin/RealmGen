@@ -3,25 +3,25 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace WorldGen {
-	public class WorldGenerator : SerializedMonoBehaviour {
-		[SerializeField] private bool generateWorldOnUpdate;
+    public class WorldGenerator : SerializedMonoBehaviour {
+        [SerializeField] private bool generateWorldOnUpdate;
 
-		[SerializeField, OnValueChanged(nameof(OnParametersUpdated))]
-		private int seed;
+        [SerializeField, OnValueChanged(nameof(OnParametersUpdated))]
+        private int seed;
 
-		[SerializeField, OnValueChanged(nameof(OnParametersUpdated))]
-		private WorldParameters worldParameters;
+        [SerializeField, OnValueChanged(nameof(OnParametersUpdated))]
+        private WorldParameters worldParameters;
 
-		public UnityEvent onWorldGenerated;
+        public UnityEvent onWorldGenerated;
 
-		[Button(ButtonSizes.Medium)]
-		private void GenerateWorld() {
-			World.GenerateWorld(seed, worldParameters);
-			onWorldGenerated.Invoke();
-		}
+        [Button(ButtonSizes.Medium)]
+        private void GenerateWorld() {
+            World.GenerateWorld(seed, worldParameters);
+            onWorldGenerated.Invoke();
+        }
 
-		private void OnParametersUpdated() {
-			if (generateWorldOnUpdate) GenerateWorld();
-		}
-	}
+        private void OnParametersUpdated() {
+            if (generateWorldOnUpdate) GenerateWorld();
+        }
+    }
 }

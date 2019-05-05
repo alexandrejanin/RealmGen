@@ -89,7 +89,7 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  worldSize: 129
+  worldSize: 257
   heightParameters:
     octaves: 4
     persistance: 0.35
@@ -98,13 +98,14 @@ MonoBehaviour:
   falloffA: 2
   falloffB: 6
   falloffMultiplier: 0.7
-  windSlopeRatio: 0.8
-  windDirRatio: 0.02
-  windDir: {x: 1, y: -0}
+  rainParameters:
+    octaves: 6
+    persistance: 0.5
+    lacunarity: 2.2
+    scale: 100
   tempA: 1
   tempB: 0.7
   tempHeightRatio: 0.517
-  windRainRatio: 30
   seaLevel: 0.35
   mountainLevel: 0.7
   seaClimate: {fileID: 11400000, guid: 272deeb33df77ea43ad9e81d115afdc9, type: 2}

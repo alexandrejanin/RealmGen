@@ -9,176 +9,121 @@ using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
 
 namespace WorldGen {
-	[Serializable]
-	public class WorldParameters : SerializedScriptableObject {
-		[Range(16, 513)] public int worldSize;
+    [Serializable]
+    public class WorldParameters : SerializedScriptableObject {
+        [Range(16, 513)] public int worldSize;
 
-		[TabGroup("Height"), SerializeField] private NoiseParameters heightParameters;
+        [TabGroup("Height"), SerializeField] private NoiseParameters heightParameters;
 
-		[TabGroup("Height"), Range(0, 10), SerializeField]
-		private float falloffA, falloffB;
+        [TabGroup("Height"), Range(0, 10), SerializeField]
+        private float falloffA, falloffB;
 
-		[TabGroup("Height"), Range(0, 1), SerializeField]
-		private float falloffMultiplier;
+        [TabGroup("Height"), Range(0, 1), SerializeField]
+        private float falloffMultiplier;
 
-		[TabGroup("Wind"), Range(0, 1), SerializeField]
-		private float windSlopeRatio, windDirRatio;
+        [TabGroup("Rain"), SerializeField] private NoiseParameters rainParameters;
 
-		[TabGroup("Wind"), SerializeField] private Vector2 windDir = Vector2.right;
+        [TabGroup("Temperature"), Range(0, 10), SerializeField]
+        private float tempA, tempB;
 
-		[TabGroup("Temperature"), Range(0, 10), SerializeField]
-		private float tempA, tempB;
+        [TabGroup("Temperature"), Range(0, 1), SerializeField]
+        private float tempHeightRatio;
 
-		[TabGroup("Temperature"), Range(0, 1), SerializeField]
-		private float tempHeightRatio;
+        [TabGroup("Climates"), Range(0, 1)] public float seaLevel, mountainLevel;
+        [TabGroup("Climates"), SerializeField] private Climate seaClimate;
+        [TabGroup("Climates"), SerializeField] private Climate mountainClimate;
 
-		[TabGroup("Rain"), SerializeField] private float windRainRatio;
+        [TabGroup("Climates"), TableMatrix(HorizontalTitle = "Temperature", VerticalTitle = "Rain"), SerializeField]
+        private Climate[,] climateTable;
 
-		[TabGroup("Climates"), Range(0, 1)] public float seaLevel, mountainLevel;
-		[TabGroup("Climates"), SerializeField] private Climate seaClimate;
-		[TabGroup("Climates"), SerializeField] private Climate mountainClimate;
+        public float[,] GetHeightMap(int seed) {
+            var heightMap = NoiseGenerator.GenerateNoiseMap(worldSize, seed, heightParameters);
 
-		[TabGroup("Climates"), TableMatrix(HorizontalTitle = "Temperature", VerticalTitle = "Rain"), SerializeField]
-		private Climate[,] climateTable;
+            var falloffMap = NoiseGenerator.GetFalloffMap(worldSize, falloffA, falloffB);
+            for (var y = 0; y < worldSize; y++) {
+                for (var x = 0; x < worldSize; x++) {
+                    heightMap[x, y] = Mathf.Clamp01(heightMap[x, y] - falloffMap[x, y] * falloffMultiplier);
+                }
+            }
 
-		public float[,] GetHeightMap(int seed) {
-			var heightMap = NoiseGenerator.GenerateNoiseMap(worldSize, seed, heightParameters);
+            return heightMap;
+        }
 
-			var falloffMap = NoiseGenerator.GetFalloffMap(worldSize, falloffA, falloffB);
-			for (var y = 0; y < worldSize; y++) {
-				for (var x = 0; x < worldSize; x++) {
-					heightMap[x, y] = Mathf.Clamp01(heightMap[x, y] - falloffMap[x, y] * falloffMultiplier);
-				}
-			}
+        public Vector2[,] GetSlopeMap(float[,] heightMap) {
+            var slopeMap = new Vector2[worldSize, worldSize];
 
-			return heightMap;
-		}
+            for (var y = 1; y < worldSize - 1; y++) {
+                for (var x = 1; x < worldSize - 1; x++) {
+                    if (heightMap[x, y] < seaLevel) continue;
 
-		public Vector2[,] GetSlopeMap(float[,] heightMap) {
-			var slopeMap = new Vector2[worldSize, worldSize];
+                    var xSlope = heightMap[x + 1, y] - heightMap[x - 1, y];
+                    var ySlope = heightMap[x, y + 1] - heightMap[x, y - 1];
 
-			for (var y = 1; y < worldSize - 1; y++) {
-				for (var x = 1; x < worldSize - 1; x++) {
-					if (heightMap[x, y] < seaLevel) continue;
+                    var thing = Mathf.Sqrt(xSlope * xSlope + ySlope * ySlope + 1);
 
-					var xSlope = heightMap[x + 1, y] - heightMap[x - 1, y];
-					var ySlope = heightMap[x, y + 1] - heightMap[x, y - 1];
+                    var normal = new Vector2(-xSlope, -ySlope) / thing;
 
-					var thing = Mathf.Sqrt(xSlope * xSlope + ySlope * ySlope + 1);
+                    slopeMap[x, y] = normal;
+                }
+            }
 
-					var normal = new Vector2(-xSlope, -ySlope) / thing;
+            return slopeMap;
+        }
 
-					slopeMap[x, y] = normal;
-				}
-			}
+        public float[,] GetRainMap(int seed) {
+            return NoiseGenerator.GenerateNoiseMap(worldSize, seed, rainParameters);
+        }
 
-			return slopeMap;
-		}
+        public float[,] GetTempMap(float[,] heightMap) {
+            var tempMap = new float[worldSize, worldSize];
 
-		public Vector2[,] GetWindMap(float[,] heightMap, Vector2[,] slopeMap) {
-			if (windDir.magnitude < .1f) {
-				Debug.LogError("windDir too low!");
-				return null;
-			}
+            for (var y = 0; y < worldSize; y++) {
+                for (var x = 0; x < worldSize; x++) {
+                    var gradientTemp = y / (float) worldSize;
+                    tempMap[x, y] = Mathf.Lerp(NoiseGenerator.Falloff(gradientTemp, tempA, tempB), 0,
+                        tempHeightRatio * (heightMap[x, y] - seaLevel));
+                }
+            }
 
-			var windMap = new Vector2[worldSize, worldSize];
+            return tempMap;
+        }
 
-			for (var startY = 0; startY < worldSize; startY++) {
-				var pos = new Vector2(0, startY);
-				var dir = windDir;
+        public Climate[,] GetClimateMap(float[,] heightMap, float[,] tempMap, float[,] rainMap) {
+            var climateMap = new Climate[worldSize, worldSize];
 
-				var lastX = -1;
-				var lastY = -1;
+            var tempTypes = climateTable.GetLength(0);
+            var rainTypes = climateTable.GetLength(1);
 
-				do {
-					var x = (int) pos.x;
-					var y = (int) pos.y;
+            for (var y = 0; y < worldSize; y++) {
+                for (var x = 0; x < worldSize; x++) {
+                    var height = heightMap[x, y];
+                    if (height < seaLevel) {
+                        climateMap[x, y] = seaClimate;
+                    }
+                    else if (height > mountainLevel) {
+                        climateMap[x, y] = mountainClimate;
+                    }
+                    else {
+                        var temp = Mathf.Clamp(tempMap[x, y], 0f, .99f);
+                        var tempIndex = Mathf.FloorToInt(temp * tempTypes);
 
-					// Stayed on same tile
-					if (x == lastX && y == lastY) {
-						windMap[x, y] -= dir;
-					}
+                        var rain = Mathf.Clamp(rainMap[x, y], 0f, .99f);
+                        var rainIndex = Mathf.FloorToInt(rain * rainTypes);
 
-					//TODO: merge winds?
+                        climateMap[x, y] = climateTable[tempIndex, rainIndex];
+                    }
+                }
+            }
 
-					// Follow slopes
-					var dirChange = windSlopeRatio * heightMap[x, y] * slopeMap[x, y];
-					dir += dirChange;
+            return climateMap;
+        }
+    }
 
-					// Go towards default wind direction
-					var magnitude = dir.magnitude;
-					dir = Vector2.Lerp(dir, windDir, windDirRatio);
-					dir = magnitude * dir.normalized;
-
-					if (dir.magnitude > 1f) dir.Normalize();
-
-					windMap[x, y] += dir;
-					pos += dir;
-
-					lastX = x;
-					lastY = y;
-				} while (pos.x >= 0 && pos.x < worldSize && pos.y >= 0 && pos.y < worldSize && dir.magnitude > .01f);
-			}
-
-			return windMap;
-		}
-
-		public float[,] GetRainMap(float[,] heightMap, Vector2[,] windMap) {
-			var rainMap = new float[worldSize, worldSize];
-
-			return NoiseGenerator.Blur(rainMap);
-		}
-
-		public float[,] GetTempMap(float[,] heightMap) {
-			var tempMap = new float[worldSize, worldSize];
-
-			for (var y = 0; y < worldSize; y++) {
-				for (var x = 0; x < worldSize; x++) {
-					var gradientTemp = y / (float) worldSize;
-					tempMap[x, y] = Mathf.Lerp(NoiseGenerator.Falloff(gradientTemp, tempA, tempB), 0,
-											   tempHeightRatio * (heightMap[x, y] - seaLevel));
-				}
-			}
-
-			return tempMap;
-		}
-
-		public Climate[,] GetClimateMap(float[,] heightMap, float[,] tempMap, float[,] rainMap) {
-			var climateMap = new Climate[worldSize, worldSize];
-
-			var tempTypes = climateTable.GetLength(0);
-			var rainTypes = climateTable.GetLength(1);
-
-			for (var y = 0; y < worldSize; y++) {
-				for (var x = 0; x < worldSize; x++) {
-					var height = heightMap[x, y];
-					if (height < seaLevel) {
-						climateMap[x, y] = seaClimate;
-					}
-					else if (height > mountainLevel) {
-						climateMap[x, y] = mountainClimate;
-					}
-					else {
-						var temp = Mathf.Clamp(tempMap[x, y], 0f, .99f);
-						var tempIndex = Mathf.FloorToInt(temp * tempTypes);
-
-						var rain = Mathf.Clamp(rainMap[x, y], 0f, .99f);
-						var rainIndex = Mathf.FloorToInt(rain * rainTypes);
-
-						climateMap[x, y] = climateTable[tempIndex, rainIndex];
-					}
-				}
-			}
-
-			return climateMap;
-		}
-	}
-
-	[Serializable]
-	public struct NoiseParameters {
-		[Range(1, 8)] public int octaves;
-		[Range(0, 1)] public float persistance;
-		[Range(1, 5)] public float lacunarity;
-		[Range(10, 200)] public int scale;
-	}
+    [Serializable]
+    public struct NoiseParameters {
+        [Range(1, 8)] public int octaves;
+        [Range(0, 1)] public float persistance;
+        [Range(1, 5)] public float lacunarity;
+        [Range(10, 200)] public int scale;
+    }
 }

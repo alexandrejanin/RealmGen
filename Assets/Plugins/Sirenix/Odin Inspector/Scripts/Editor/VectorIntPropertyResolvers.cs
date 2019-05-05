@@ -6,16 +6,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Sirenix.OdinInspector.Editor.Drawers
-{
+namespace Sirenix.OdinInspector.Editor.Drawers {
     using UnityEngine;
 
-    public sealed class Vector2IntResolver : BaseMemberPropertyResolver<Vector2Int>
-    {
-        protected override InspectorPropertyInfo[] GetPropertyInfos()
-        {
-            return new InspectorPropertyInfo[]
-            {
+    public sealed class Vector2IntResolver : BaseMemberPropertyResolver<Vector2Int> {
+        protected override InspectorPropertyInfo[] GetPropertyInfos() {
+            return new InspectorPropertyInfo[] {
                 InspectorPropertyInfo.CreateValue("x", 0, this.Property.ValueEntry.SerializationBackend,
                     new GetterSetter<Vector2Int, int>(
                         getter: (ref Vector2Int vec) => vec.x,
@@ -28,12 +24,9 @@ namespace Sirenix.OdinInspector.Editor.Drawers
         }
     }
 
-    public sealed class Vector3IntResolver : BaseMemberPropertyResolver<Vector3Int>
-    {
-        protected override InspectorPropertyInfo[] GetPropertyInfos()
-        {
-            return new InspectorPropertyInfo[]
-            {
+    public sealed class Vector3IntResolver : BaseMemberPropertyResolver<Vector3Int> {
+        protected override InspectorPropertyInfo[] GetPropertyInfos() {
+            return new InspectorPropertyInfo[] {
                 InspectorPropertyInfo.CreateValue("x", 0, this.Property.ValueEntry.SerializationBackend,
                     new GetterSetter<Vector3Int, int>(
                         getter: (ref Vector3Int vec) => vec.x,

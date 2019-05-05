@@ -737,6 +737,12 @@
             By default FolderPath enforces forward slashes. Set UseBackslashes to <c>true</c> if you want backslashes instead.
             </summary>
         </member>
+        <member name="T:Sirenix.OdinInspector.HideDuplicateReferenceBoxAttribute">
+            <summary>
+            Indicates that Odin should hide the reference box, if this property would otherwise be drawn as a reference to another property, due to duplicate reference values being encountered.
+            Note that if the value is referencing itself recursively, then the reference box will be drawn regardless of this attribute in all recursive draw calls.
+            </summary>
+        </member>
         <member name="T:Sirenix.OdinInspector.HideInInlineEditorsAttribute">
             <summary>
             Hides a property if it is drawn within an <see cref="T:Sirenix.OdinInspector.InlineEditorAttribute"/>.
@@ -3290,6 +3296,11 @@
             Optional member field, property or function to show and hide the info box.
             </summary>
         </member>
+        <member name="F:Sirenix.OdinInspector.InfoBoxAttribute.GUIAlwaysEnabled">
+            <summary>
+            When <c>true</c> the InfoBox will ignore the GUI.enable flag and always draw as enabled.
+            </summary>
+        </member>
         <member name="M:Sirenix.OdinInspector.InfoBoxAttribute.#ctor(System.String,Sirenix.OdinInspector.InfoMessageType,System.String)">
             <summary>
             Displays an info box above the property.
@@ -3505,6 +3516,11 @@
         <member name="F:Sirenix.OdinInspector.ListDrawerSettingsAttribute.AlwaysAddDefaultValue">
             <summary>
             If true, object/type pickers will never be shown when the list add button is clicked, and default(T) will always be added instantly instead, where T is the element type of the list.
+            </summary>
+        </member>
+        <member name="F:Sirenix.OdinInspector.ListDrawerSettingsAttribute.AddCopiesLastElement">
+            <summary>
+            Whether adding a new element should copy the last element. False by default.
             </summary>
         </member>
         <member name="P:Sirenix.OdinInspector.ListDrawerSettingsAttribute.ShowPaging">

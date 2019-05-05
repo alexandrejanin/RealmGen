@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   automateBeforeBuilds: 0
   deleteDllAfterBuilds: 1
+  AutomateForAllAOTPlatforms: 1
   automateForPlatforms: 0900000014000000
   lastScan: 0
   supportSerializedTypes: []

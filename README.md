@@ -1,6 +1,6 @@
 # RealmGen
 
-![image](https://i.imgur.com/EU9suZZ.jpg)
+![image](example.png)
 
 A WIP procedural world generator in Unity.
 

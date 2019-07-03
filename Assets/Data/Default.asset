@@ -89,7 +89,8 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  worldSize: 257
+  width: 513
+  height: 241
   heightParameters:
     octaves: 4
     persistance: 0.35
@@ -107,6 +108,6 @@ MonoBehaviour:
   tempB: 0.7
   tempHeightRatio: 0.517
   seaLevel: 0.35
-  mountainLevel: 0.7
+  mountainLevel: 0.65
   seaClimate: {fileID: 11400000, guid: 272deeb33df77ea43ad9e81d115afdc9, type: 2}
   mountainClimate: {fileID: 11400000, guid: 2748a0b215dda754dbf09d86804eba31, type: 2}

@@ -2,34 +2,40 @@
 
 namespace WorldGen {
     public static class MeshGenerator {
-        public static Mesh GenerateTerrainMesh(float[,] heightMap, AnimationCurve heightCurve, float seaLevel,
-                                               float heightMultiplier) {
-            //TODO: Allow arbitrary size maps, Allow non-square maps
-            var size = heightMap.GetLength(0);
+        public static Mesh GenerateTerrainMesh(
+            float[,] heightMap,
+            AnimationCurve heightCurve,
+            float seaLevel,
+            float heightMultiplier
+        ) {
+            var width = heightMap.GetLength(0);
+            var height = heightMap.GetLength(1);
 
-            var lod = size / 256;
+            var lod = Mathf.Max(width, height) / 256;
             var meshStepSize = lod == 0 ? 1 : lod * 2;
-            var meshSize = (size - 1) / meshStepSize + 1;
+            
+            var meshWidth = (width - 1) / meshStepSize + 1;
+            var meshHeight = (height - 1) / meshStepSize + 1;
 
-            var topLeftX = (size - 1) / -2f;
-            var topLeftZ = (size - 1) / 2f;
+            var topLeftX = (width - 1) / -2f;
+            var topLeftZ = (height - 1) / 2f;
 
-            var meshData = new MeshData(meshSize);
+            var meshData = new MeshData(meshWidth, meshHeight);
             var vertexIndex = 0;
 
-            for (var y = 0; y < size; y += meshStepSize) {
-                for (var x = 0; x < size; x += meshStepSize) {
-                    var height = heightMap[x, y];
-                    var vertexHeight = height <= seaLevel
+            for (var y = 0; y < height; y += meshStepSize) {
+                for (var x = 0; x < width; x += meshStepSize) {
+                    var heightAtPoint = heightMap[x, y];
+                    var vertexHeight = heightAtPoint <= seaLevel
                         ? 0
-                        : heightCurve.Evaluate(Mathf.InverseLerp(seaLevel, 1f, height)) *
+                        : heightCurve.Evaluate(Mathf.InverseLerp(seaLevel, 1f, heightAtPoint)) *
                           heightMultiplier;
                     meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, vertexHeight, topLeftZ - y);
-                    meshData.uvs[vertexIndex] = new Vector2(x / (float) size, y / (float) size);
+                    meshData.uvs[vertexIndex] = new Vector2(x / (float) width, y / (float) height);
 
-                    if (x < size - 1 && y < size - 1) {
-                        meshData.AddTriangle(vertexIndex, vertexIndex + meshSize + 1, vertexIndex + meshSize);
-                        meshData.AddTriangle(vertexIndex + meshSize + 1, vertexIndex, vertexIndex + 1);
+                    if (x < width - 1 && y < height - 1) {
+                        meshData.AddTriangle(vertexIndex, vertexIndex + meshWidth + 1, vertexIndex + meshWidth);
+                        meshData.AddTriangle(vertexIndex + meshWidth + 1, vertexIndex, vertexIndex + 1);
                     }
 
                     vertexIndex++;
@@ -46,10 +52,10 @@ namespace WorldGen {
 
             private int triangleIndex;
 
-            public MeshData(int size) {
-                vertices = new Vector3[size * size];
-                uvs = new Vector2[size * size];
-                triangles = new int[(size - 1) * (size - 1) * 6];
+            public MeshData(int width, int height) {
+                vertices = new Vector3[width * height];
+                uvs = new Vector2[width * height];
+                triangles = new int[(width - 1) * (height - 1) * 6];
                 triangleIndex = 0;
             }
 

@@ -2,13 +2,19 @@
 
 namespace WorldGen {
     public class World {
-        public readonly int seed;
-        public readonly WorldParameters worldParameters;
-        public readonly float[,] heightMap, tempMap, rainMap;
+        private readonly int seed;
 
-        public readonly Vector2[,] slopeMap;
+        private readonly WorldParameters worldParameters;
+        private readonly float[,] heightMap;
+        private readonly float[,] tempMap;
+        private readonly float[,] rainMap;
+        private readonly Vector2[,] slopeMap;
+        private readonly Climate[,] climateMap;
 
-        public readonly Climate[,] climateMap;
+        public WorldParameters WorldParameters => worldParameters;
+        public float[,] HeightMap => heightMap;
+        public float[,] TempMap => tempMap;
+        public float[,] RainMap => rainMap;
 
         public static World Current { get; private set; }
 
@@ -30,5 +36,9 @@ namespace WorldGen {
         public static void GenerateWorld(int seed, WorldParameters worldParameters) {
             Current = new World(seed, worldParameters);
         }
+
+        public float GetHeight(int x, int y) => heightMap[x, y];
+        public Vector2 GetSlope(int x, int y) => slopeMap[x, y];
+        public Climate GetClimate(int x, int y) => climateMap[x, y];
     }
 }

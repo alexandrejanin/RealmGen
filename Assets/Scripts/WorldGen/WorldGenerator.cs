@@ -4,12 +4,15 @@ using UnityEngine.Events;
 
 namespace WorldGen {
     public class WorldGenerator : SerializedMonoBehaviour {
-        [SerializeField] private bool generateWorldOnUpdate;
+        [SerializeField]
+        private bool generateWorldOnUpdate;
 
-        [SerializeField, OnValueChanged(nameof(OnParametersUpdated))]
+        [SerializeField,
+         OnValueChanged(nameof(OnParametersUpdated))]
         private int seed;
 
-        [SerializeField, OnValueChanged(nameof(OnParametersUpdated))]
+        [SerializeField,
+         OnValueChanged(nameof(OnParametersUpdated))]
         private WorldParameters worldParameters;
 
         public UnityEvent onWorldGenerated;

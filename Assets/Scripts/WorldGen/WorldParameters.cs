@@ -1,47 +1,82 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Sirenix.OdinInspector;
-using Sirenix.Utilities;
 using UnityEngine;
-using Random = UnityEngine.Random;
-using Vector2 = UnityEngine.Vector2;
 
 namespace WorldGen {
     [Serializable]
     public class WorldParameters : SerializedScriptableObject {
-        [Range(16, 513)] public int worldSize;
+        // Size Parameters
 
-        [TabGroup("Height"), SerializeField] private NoiseParameters heightParameters;
+        [Range(16, 513),
+         SerializeField]
+        private int width, height;
 
-        [TabGroup("Height"), Range(0, 10), SerializeField]
+        public int Width => width;
+        public int Height => height;
+
+
+        // Height Parameters
+
+        [TabGroup("Height"),
+         SerializeField]
+        private NoiseParameters heightParameters;
+
+        [TabGroup("Height"),
+         Range(0, 10),
+         SerializeField]
         private float falloffA, falloffB;
 
-        [TabGroup("Height"), Range(0, 1), SerializeField]
+        [TabGroup("Height"),
+         Range(0, 1),
+         SerializeField]
         private float falloffMultiplier;
 
-        [TabGroup("Rain"), SerializeField] private NoiseParameters rainParameters;
 
-        [TabGroup("Temperature"), Range(0, 10), SerializeField]
+        // Rain Parameters
+
+        [TabGroup("Rain"),
+         SerializeField]
+        private NoiseParameters rainParameters;
+
+
+        // Temperature Parameters
+
+        [TabGroup("Temperature"),
+         Range(0, 10),
+         SerializeField]
         private float tempA, tempB;
 
-        [TabGroup("Temperature"), Range(0, 1), SerializeField]
+        [TabGroup("Temperature"),
+         Range(0, 1),
+         SerializeField]
         private float tempHeightRatio;
 
-        [TabGroup("Climates"), Range(0, 1)] public float seaLevel, mountainLevel;
-        [TabGroup("Climates"), SerializeField] private Climate seaClimate;
-        [TabGroup("Climates"), SerializeField] private Climate mountainClimate;
 
-        [TabGroup("Climates"), TableMatrix(HorizontalTitle = "Temperature", VerticalTitle = "Rain"), SerializeField]
+        // Climate Parameters
+
+        [TabGroup("Climates"),
+         Range(0, 1),
+         SerializeField]
+        private float seaLevel = .35f, mountainLevel = .65f;
+
+        public float SeaLevel => seaLevel;
+        public float MountainLevel => mountainLevel;
+
+        [TabGroup("Climates"), SerializeField]
+        private Climate seaClimate, mountainClimate;
+
+        [TabGroup("Climates"),
+         TableMatrix(HorizontalTitle = "Temperature", VerticalTitle = "Rain"),
+         SerializeField]
         private Climate[,] climateTable;
 
-        public float[,] GetHeightMap(int seed) {
-            var heightMap = NoiseGenerator.GenerateNoiseMap(worldSize, seed, heightParameters);
 
-            var falloffMap = NoiseGenerator.GetFalloffMap(worldSize, falloffA, falloffB);
-            for (var y = 0; y < worldSize; y++) {
-                for (var x = 0; x < worldSize; x++) {
+        public float[,] GetHeightMap(int seed) {
+            var heightMap = NoiseGenerator.GenerateNoiseMap(width, height, seed, heightParameters);
+
+            var falloffMap = NoiseGenerator.GetFalloffMap(width, height, falloffA, falloffB);
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
                     heightMap[x, y] = Mathf.Clamp01(heightMap[x, y] - falloffMap[x, y] * falloffMultiplier);
                 }
             }
@@ -50,10 +85,10 @@ namespace WorldGen {
         }
 
         public Vector2[,] GetSlopeMap(float[,] heightMap) {
-            var slopeMap = new Vector2[worldSize, worldSize];
+            var slopeMap = new Vector2[width, height];
 
-            for (var y = 1; y < worldSize - 1; y++) {
-                for (var x = 1; x < worldSize - 1; x++) {
+            for (var y = 1; y < height - 1; y++) {
+                for (var x = 1; x < width - 1; x++) {
                     if (heightMap[x, y] < seaLevel) continue;
 
                     var xSlope = heightMap[x + 1, y] - heightMap[x - 1, y];
@@ -71,15 +106,15 @@ namespace WorldGen {
         }
 
         public float[,] GetRainMap(int seed) {
-            return NoiseGenerator.GenerateNoiseMap(worldSize, seed, rainParameters);
+            return NoiseGenerator.GenerateNoiseMap(width, height, seed, rainParameters);
         }
 
         public float[,] GetTempMap(float[,] heightMap) {
-            var tempMap = new float[worldSize, worldSize];
+            var tempMap = new float[width, height];
 
-            for (var y = 0; y < worldSize; y++) {
-                for (var x = 0; x < worldSize; x++) {
-                    var gradientTemp = y / (float) worldSize;
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
+                    var gradientTemp = y / (float) height;
                     tempMap[x, y] = Mathf.Lerp(NoiseGenerator.Falloff(gradientTemp, tempA, tempB), 0,
                         tempHeightRatio * (heightMap[x, y] - seaLevel));
                 }
@@ -89,13 +124,13 @@ namespace WorldGen {
         }
 
         public Climate[,] GetClimateMap(float[,] heightMap, float[,] tempMap, float[,] rainMap) {
-            var climateMap = new Climate[worldSize, worldSize];
+            var climateMap = new Climate[width, height];
 
             var tempTypes = climateTable.GetLength(0);
             var rainTypes = climateTable.GetLength(1);
 
-            for (var y = 0; y < worldSize; y++) {
-                for (var x = 0; x < worldSize; x++) {
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
                     var height = heightMap[x, y];
                     if (height < seaLevel) {
                         climateMap[x, y] = seaClimate;
@@ -121,9 +156,16 @@ namespace WorldGen {
 
     [Serializable]
     public struct NoiseParameters {
-        [Range(1, 8)] public int octaves;
-        [Range(0, 1)] public float persistance;
-        [Range(1, 5)] public float lacunarity;
-        [Range(10, 200)] public int scale;
+        [Range(1, 8)]
+        public int octaves;
+
+        [Range(0, 1)]
+        public float persistance;
+
+        [Range(1, 5)]
+        public float lacunarity;
+
+        [Range(10, 200)]
+        public int scale;
     }
 }

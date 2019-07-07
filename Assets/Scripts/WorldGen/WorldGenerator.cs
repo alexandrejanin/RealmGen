@@ -8,23 +8,22 @@ namespace WorldGen {
         private bool generateWorldOnUpdate;
 
         [SerializeField,
-         OnValueChanged(nameof(OnParametersUpdated))]
+         OnValueChanged(nameof(OnParameterUpdated))]
         private int seed;
 
-        [SerializeField,
-         OnValueChanged(nameof(OnParametersUpdated))]
+        [SerializeField]
         private WorldParameters worldParameters;
 
         public UnityEvent onWorldGenerated;
 
         [Button(ButtonSizes.Medium)]
         private void GenerateWorld() {
-            World.GenerateWorld(seed, worldParameters);
-            onWorldGenerated.Invoke();
+            World.GenerateWorld(seed, worldParameters, onWorldGenerated.Invoke, OnParameterUpdated);
         }
 
-        private void OnParametersUpdated() {
-            if (generateWorldOnUpdate) GenerateWorld();
+        private void OnParameterUpdated() {
+            if (generateWorldOnUpdate)
+                GenerateWorld();
         }
     }
 }

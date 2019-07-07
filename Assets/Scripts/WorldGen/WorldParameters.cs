@@ -7,8 +7,10 @@ namespace WorldGen {
     public class WorldParameters : SerializedScriptableObject {
         // Size Parameters
 
-        [Range(16, 513),
-         SerializeField]
+        [Range(16, 1024),
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private int width, height;
 
         public int Width => width;
@@ -18,24 +20,38 @@ namespace WorldGen {
         // Height Parameters
 
         [TabGroup("Height"),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private NoiseParameters heightParameters;
 
         [TabGroup("Height"),
          Range(0, 10),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private float falloffA, falloffB;
 
         [TabGroup("Height"),
          Range(0, 1),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private float falloffMultiplier;
+
+        [TabGroup("Height"),
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
+        private bool normalize;
 
 
         // Rain Parameters
 
         [TabGroup("Rain"),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private NoiseParameters rainParameters;
 
 
@@ -43,12 +59,16 @@ namespace WorldGen {
 
         [TabGroup("Temperature"),
          Range(0, 10),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private float tempA, tempB;
 
         [TabGroup("Temperature"),
          Range(0, 1),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private float tempHeightRatio;
 
 
@@ -56,23 +76,35 @@ namespace WorldGen {
 
         [TabGroup("Climates"),
          Range(0, 1),
-         SerializeField]
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private float seaLevel = .35f, mountainLevel = .65f;
 
         public float SeaLevel => seaLevel;
         public float MountainLevel => mountainLevel;
 
-        [TabGroup("Climates"), SerializeField]
+        [TabGroup("Climates"),
+         SerializeField,
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private Climate seaClimate, mountainClimate;
 
         [TabGroup("Climates"),
+         SerializeField,
          TableMatrix(HorizontalTitle = "Temperature", VerticalTitle = "Rain"),
-         SerializeField]
+         OnValueChanged(nameof(OnUpdate))
+        ]
         private Climate[,] climateTable;
 
 
+        public Action OnUpdateCallback { set; private get; }
+
+        private void OnUpdate() => OnUpdateCallback?.Invoke();
+
+
         public float[,] GetHeightMap(int seed) {
-            var heightMap = NoiseGenerator.GenerateNoiseMap(width, height, seed, heightParameters);
+            var heightMap = NoiseGenerator.GenerateNoiseMap(width, height, seed, heightParameters, normalize);
 
             var falloffMap = NoiseGenerator.GetFalloffMap(width, height, falloffA, falloffB);
             for (var y = 0; y < height; y++) {
@@ -106,7 +138,7 @@ namespace WorldGen {
         }
 
         public float[,] GetRainMap(int seed) {
-            return NoiseGenerator.GenerateNoiseMap(width, height, seed, rainParameters);
+            return NoiseGenerator.GenerateNoiseMap(width, height, seed, rainParameters, true);
         }
 
         public float[,] GetTempMap(float[,] heightMap) {
@@ -153,6 +185,7 @@ namespace WorldGen {
             return climateMap;
         }
     }
+
 
     [Serializable]
     public struct NoiseParameters {

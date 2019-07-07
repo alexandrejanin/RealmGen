@@ -7,7 +7,8 @@ namespace WorldGen {
             int width,
             int height,
             int seed,
-            NoiseParameters noiseParameters
+            NoiseParameters noiseParameters,
+            bool normalize
         ) {
             var noiseMap = new float[width, height];
             var random = new Random(seed);
@@ -50,9 +51,11 @@ namespace WorldGen {
                 }
             }
 
-            for (var y = 0; y < height; y++) {
-                for (var x = 0; x < width; x++) {
-                    noiseMap[x, y] = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]);
+            if (normalize) {
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        noiseMap[x, y] = Mathf.InverseLerp(minNoiseHeight, maxNoiseHeight, noiseMap[x, y]);
+                    }
                 }
             }
 

@@ -1,44 +1,45 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace WorldGen {
     public class World {
         private readonly int seed;
 
-        private readonly WorldParameters worldParameters;
-        private readonly float[,] heightMap;
-        private readonly float[,] tempMap;
-        private readonly float[,] rainMap;
-        private readonly Vector2[,] slopeMap;
-        private readonly Climate[,] climateMap;
+        public WorldParameters WorldParameters { get; }
+        public float[,] HeightMap { get; }
+        public float[,] TempMap { get; }
+        public float[,] RainMap { get; }
+        private Vector2[,] SlopeMap { get; }
+        private Climate[,] ClimateMap { get; }
 
-        public WorldParameters WorldParameters => worldParameters;
-        public float[,] HeightMap => heightMap;
-        public float[,] TempMap => tempMap;
-        public float[,] RainMap => rainMap;
 
         public static World Current { get; private set; }
 
-        private World(int seed, WorldParameters worldParameters) {
+        private World(int seed, WorldParameters worldParameters, Action onParameterUpdated) {
             this.seed = seed;
-            this.worldParameters = worldParameters;
 
-            heightMap = worldParameters.GetHeightMap(seed);
+            worldParameters.OnUpdateCallback = onParameterUpdated;
+            WorldParameters = worldParameters;
 
-            slopeMap = worldParameters.GetSlopeMap(heightMap);
-
-            rainMap = worldParameters.GetRainMap(2 * seed);
-
-            tempMap = worldParameters.GetTempMap(heightMap);
-
-            climateMap = worldParameters.GetClimateMap(heightMap, tempMap, rainMap);
+            HeightMap = worldParameters.GetHeightMap(seed);
+            SlopeMap = worldParameters.GetSlopeMap(HeightMap);
+            RainMap = worldParameters.GetRainMap(2 * seed);
+            TempMap = worldParameters.GetTempMap(HeightMap);
+            ClimateMap = worldParameters.GetClimateMap(HeightMap, TempMap, RainMap);
         }
 
-        public static void GenerateWorld(int seed, WorldParameters worldParameters) {
-            Current = new World(seed, worldParameters);
-        }
+        public float GetHeight(int x, int y) => HeightMap[x, y];
+        public Vector2 GetSlope(int x, int y) => SlopeMap[x, y];
+        public Climate GetClimate(int x, int y) => ClimateMap[x, y];
 
-        public float GetHeight(int x, int y) => heightMap[x, y];
-        public Vector2 GetSlope(int x, int y) => slopeMap[x, y];
-        public Climate GetClimate(int x, int y) => climateMap[x, y];
+        public static void GenerateWorld(
+            int seed,
+            WorldParameters worldParameters,
+            Action onWorldGenerated,
+            Action onParameterUpdated
+        ) {
+            Current = new World(seed, worldParameters, onParameterUpdated);
+            onWorldGenerated?.Invoke();
+        }
     }
 }

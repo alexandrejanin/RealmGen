@@ -1,27 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace WorldGen {
     public class WorldDisplay : MonoBehaviour {
-        [SerializeField, OnValueChanged(nameof(OnDrawModeChanged))]
+        [SerializeField,
+         OnValueChanged(nameof(OnDrawModeChanged))]
         private DrawMode drawMode;
 
-        [TabGroup("Slope"), SerializeField]
+        [TabGroup("Slope"),
+         SerializeField]
         private bool drawSlope;
 
-        [TabGroup("Slope"), SerializeField]
+        [TabGroup("Slope"),
+         SerializeField]
         private float slopeMultiplier;
 
         // Mesh
         [SerializeField]
         private MeshFilter meshFilter;
 
-        [SerializeField]
+        [SerializeField,
+         OnValueChanged(nameof(OnWorldGenerated))]
         private AnimationCurve heightCurve;
 
-        [SerializeField, OnValueChanged(nameof(OnWorldGenerated))]
+        [SerializeField,
+         OnValueChanged(nameof(OnWorldGenerated))]
         private float heightMultiplier;
 
         // Gradients
@@ -37,10 +41,13 @@ namespace WorldGen {
 
         public void OnWorldGenerated() {
             var world = World.Current;
-
-            meshFilter.mesh = MeshGenerator.GenerateTerrainMesh(world.HeightMap, heightCurve,
+            
+            meshFilter.mesh = MeshGenerator.GenerateTerrainMesh(
+                world.HeightMap,
+                heightCurve,
                 world.WorldParameters.SeaLevel,
-                heightMultiplier);
+                heightMultiplier
+            )[0, 0];
 
             textures = new Dictionary<DrawMode, Texture2D> {
                 {DrawMode.Normal, GenerateClimateTexture()},
@@ -85,7 +92,7 @@ namespace WorldGen {
                     try {
                         climate = World.Current.GetClimate(x, y);
                     }
-                    catch (IndexOutOfRangeException) {
+                    catch (System.IndexOutOfRangeException) {
                         Debug.Log(x + ", " + y);
                         throw;
                     }

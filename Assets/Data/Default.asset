@@ -89,8 +89,8 @@ MonoBehaviour:
     - Name: 
       Entry: 8
       Data: 
-  width: 513
-  height: 241
+  width: 255
+  height: 255
   heightParameters:
     octaves: 4
     persistance: 0.35
@@ -99,6 +99,7 @@ MonoBehaviour:
   falloffA: 2
   falloffB: 6
   falloffMultiplier: 0.7
+  normalize: 1
   rainParameters:
     octaves: 6
     persistance: 0.5

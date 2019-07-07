@@ -2,7 +2,7 @@
 
 namespace WorldGen {
     public static class MeshGenerator {
-        public static Mesh GenerateTerrainMesh(
+        public static Mesh[,] GenerateTerrainMesh(
             float[,] heightMap,
             AnimationCurve heightCurve,
             float seaLevel,
@@ -11,38 +11,39 @@ namespace WorldGen {
             var width = heightMap.GetLength(0);
             var height = heightMap.GetLength(1);
 
-            var lod = Mathf.Max(width, height) / 256;
-            var meshStepSize = lod == 0 ? 1 : lod * 2;
-            
-            var meshWidth = (width - 1) / meshStepSize + 1;
-            var meshHeight = (height - 1) / meshStepSize + 1;
-
             var topLeftX = (width - 1) / -2f;
             var topLeftZ = (height - 1) / 2f;
 
-            var meshData = new MeshData(meshWidth, meshHeight);
+            var chunks = new[,] {{new MeshData(width, height)}};
             var vertexIndex = 0;
 
-            for (var y = 0; y < height; y += meshStepSize) {
-                for (var x = 0; x < width; x += meshStepSize) {
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
                     var heightAtPoint = heightMap[x, y];
                     var vertexHeight = heightAtPoint <= seaLevel
                         ? 0
                         : heightCurve.Evaluate(Mathf.InverseLerp(seaLevel, 1f, heightAtPoint)) *
                           heightMultiplier;
-                    meshData.vertices[vertexIndex] = new Vector3(topLeftX + x, vertexHeight, topLeftZ - y);
-                    meshData.uvs[vertexIndex] = new Vector2(x / (float) width, y / (float) height);
+                    chunks[0, 0].vertices[vertexIndex] = new Vector3(topLeftX + x, vertexHeight, topLeftZ - y);
+                    chunks[0, 0].uvs[vertexIndex] = new Vector2(x / (float) width, y / (float) height);
 
                     if (x < width - 1 && y < height - 1) {
-                        meshData.AddTriangle(vertexIndex, vertexIndex + meshWidth + 1, vertexIndex + meshWidth);
-                        meshData.AddTriangle(vertexIndex + meshWidth + 1, vertexIndex, vertexIndex + 1);
+                        chunks[0, 0].AddTriangle(vertexIndex, vertexIndex + width + 1, vertexIndex + width);
+                        chunks[0, 0].AddTriangle(vertexIndex + width + 1, vertexIndex, vertexIndex + 1);
                     }
 
                     vertexIndex++;
                 }
             }
 
-            return meshData.CreateMesh();
+            var meshes = new Mesh[chunks.GetLength(0), chunks.GetLength(1)];
+            for (var i = 0; i < chunks.GetLength(0); i++) {
+                for (var j = 0; j < chunks.GetLength(1); j++) {
+                    meshes[i, j] = chunks[i, j].CreateMesh();
+                }
+            }
+
+            return meshes;
         }
 
         private struct MeshData {
